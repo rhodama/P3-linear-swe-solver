@@ -127,8 +127,6 @@ int main(int argc, char **argv)
         }
     }
 
-    printf("Hello World from rank %d\n", rank);
-
     init(h, u, v, length, width, nx, ny, depth, g, dt, rank, num_procs);
 
     FILE *fptr;
