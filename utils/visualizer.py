@@ -10,7 +10,7 @@ import sys
 
 header_t = np.dtype([('Lx', 'i4'), ('Ly', 'i4'), ('nx', 'i4'), ('ny', 'i4'), ('H', 'f8'), ('g', 'f8'), ('r', 'f8'), ('h', 'f8'), ('dt', 'f8'), ('num_iter', 'i4'), ('save_iter', 'i4')])
 
-def main(file='serial.out', animation_file='anim.gif'):
+def main(file='gpu.out', animation_file='anim.gif'):
     header = np.fromfile(file, dtype=header_t, count=1)
 
     Lx = header['Lx'][0]

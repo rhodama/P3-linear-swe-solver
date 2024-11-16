@@ -1,17 +1,14 @@
-NVCC=nvcc
-NVCCFLAGS=-DCUDA
-
 CPP=CC
-CFLAGS=-lm
-OPTFLAGS=-O3 -ffast-math
-
-MPIFLAGS=-DMPI
-
+CFLAGS= -O3 -lm -march=native -funroll-loops -mavx2
+OPTFLAGS=-O3  
+MPIFLAGS=-DMPI 
 DEBUGFLAGS=-g -pg
 
+NVCC=nvcc
+NVCCFLAGS= -Xptxas -dlcm=ca -O3 -DCUDA -gencode arch=compute_80,code=sm_80 
 PYTHON=python3
 
-all: mpi gpu basic_serial
+all: mpi gpu basic_serial serial
 
 mpi: build/mpi
 gpu: build/gpu

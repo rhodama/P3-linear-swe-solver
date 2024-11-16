@@ -1,4 +1,5 @@
 #define h(i, j) h[(i) * (ny + 1) + (j)]
+
 #define u(i, j) u[(i) * (ny) + (j)]
 #define v(i, j) v[(i) * (ny + 1) + (j)]
 

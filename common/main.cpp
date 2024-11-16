@@ -4,12 +4,18 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef CUDA
+#include <cuda_runtime.h>
+#endif
+
 #ifdef MPI
 #include <mpi.h>
 #endif
 
 #include "scenarios.hpp"
 #include "solver.hpp"
+
+#define ALIGNMENT 64
 
 int main(int argc, char **argv)
 {
@@ -100,9 +106,33 @@ int main(int argc, char **argv)
 
     if (rank == 0)
     {
-        h = (double *)calloc((nx + 1) * (ny + 1), sizeof(double));
-        u = (double *)calloc((nx + 2) * ny, sizeof(double));
-        v = (double *)calloc(nx * (ny + 2), sizeof(double));
+         int result;
+
+    // Allocate aligned memory for h
+    result = posix_memalign((void**)&h, ALIGNMENT, (nx + 1) * (ny + 1) * sizeof(double));
+    if (result != 0) {
+        fprintf(stderr, "Memory allocation failed for h\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate aligned memory for u
+    result = posix_memalign((void**)&u, ALIGNMENT, (nx + 2) * ny * sizeof(double));
+    if (result != 0) {
+        fprintf(stderr, "Memory allocation failed for u\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate aligned memory for v
+    result = posix_memalign((void**)&v, ALIGNMENT, nx * (ny + 2) * sizeof(double));
+    if (result != 0) {
+        fprintf(stderr, "Memory allocation failed for v\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialize the allocated memory to zero
+    memset(h, 0, (nx + 1) * (ny + 1) * sizeof(double));
+    memset(u, 0, (nx + 2) * ny * sizeof(double));
+    memset(v, 0, nx * (ny + 2) * sizeof(double));
 
         if (strcmp(scenario, "water_drop") == 0)
         {
@@ -173,12 +203,12 @@ int main(int argc, char **argv)
         step();
     }
 
+#ifdef CUDA
+    cudaDeviceSynchronize();
+#endif
+
     clock_t end = clock();
     fprintf(stderr, "Execution time for rank %d: %f\n", rank, (double)(end - start) / CLOCKS_PER_SEC);
-
-#ifdef MPI
-    MPI_Finalize();
-#endif
 
     clock_t free_start = clock();
     free_memory();
@@ -196,6 +226,10 @@ int main(int argc, char **argv)
             fclose(fptr);
         }
     }
+
+#ifdef MPI
+    MPI_Finalize();
+#endif
 
     return 0;
 }
